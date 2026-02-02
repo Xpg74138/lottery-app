@@ -153,6 +153,7 @@ const recentResults = ref([]) // 最近中奖结果
 const participants = ref([]) // 参与者列表
 const awards = ref([]) // 奖项列表
 const history = ref([]) // 历史记录
+const groupProbabilities = ref([]) // 分组概率设置
 
 // 计算属性
 const canStartLottery = computed(() => {
@@ -199,6 +200,7 @@ const loadData = () => {
     const savedParticipants = localStorage.getItem('participants')
     const savedAwards = localStorage.getItem('awards')
     const savedHistory = localStorage.getItem('history')
+    const savedGroupProbabilities = localStorage.getItem('groupProbabilities')
     
     if (savedParticipants) {
       participants.value = JSON.parse(savedParticipants)
@@ -210,6 +212,9 @@ const loadData = () => {
       history.value = JSON.parse(savedHistory)
       // 更新最近中奖结果
       recentResults.value = history.value.slice(-10).reverse()
+    }
+    if (savedGroupProbabilities) {
+      groupProbabilities.value = JSON.parse(savedGroupProbabilities)
     }
   } catch (error) {
     console.error('加载数据失败:', error)
@@ -285,9 +290,8 @@ const generateLotteryResult = () => {
     return
   }
   
-  // 随机选择一个参与者
-  const randomIndex = Math.floor(Math.random() * availableParticipants.length)
-  const winner = availableParticipants[randomIndex]
+  // 根据分组概率进行加权随机
+  const winner = selectWinnerByGroupProbability(availableParticipants)
   
   // 生成抽奖记录
   const awardName = selectedMode.value === 'specified' && selectedAward.value 
@@ -314,6 +318,57 @@ const generateLotteryResult = () => {
   
   // 播放中奖音效
   playWinningSound()
+}
+
+const selectWinnerByGroupProbability = (availableParticipants) => {
+  // 如果没有分组概率设置，或者所有分组概率都为0，则随机选择
+  if (groupProbabilities.value.length === 0 || 
+      groupProbabilities.value.every(g => g.probability === 0)) {
+    const randomIndex = Math.floor(Math.random() * availableParticipants.length)
+    return availableParticipants[randomIndex]
+  }
+  
+  // 创建分组概率映射
+  const groupProbabilityMap = new Map()
+  groupProbabilities.value.forEach(g => {
+    groupProbabilityMap.set(g.name, g.probability || 0)
+  })
+  
+  // 计算每个参与者的权重
+  const weightedParticipants = availableParticipants.map(p => {
+    const groupProbability = groupProbabilityMap.get(p.group) || 0
+    return {
+      participant: p,
+      weight: groupProbability
+    }
+  })
+  
+  // 过滤掉权重为0的参与者
+  const validWeightedParticipants = weightedParticipants.filter(wp => wp.weight > 0)
+  
+  // 如果所有参与者权重都为0，则随机选择
+  if (validWeightedParticipants.length === 0) {
+    const randomIndex = Math.floor(Math.random() * availableParticipants.length)
+    return availableParticipants[randomIndex]
+  }
+  
+  // 计算总权重
+  const totalWeight = validWeightedParticipants.reduce((sum, wp) => sum + wp.weight, 0)
+  
+  // 生成随机数
+  let random = Math.random() * totalWeight
+  
+  // 根据权重选择中奖者
+  for (const wp of validWeightedParticipants) {
+    random -= wp.weight
+    if (random <= 0) {
+      return wp.participant
+    }
+  }
+  
+  // 兜底：如果以上逻辑出错，随机选择一个
+  const randomIndex = Math.floor(Math.random() * availableParticipants.length)
+  return availableParticipants[randomIndex]
 }
 
 const playWinningSound = () => {

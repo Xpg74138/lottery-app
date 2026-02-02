@@ -30,6 +30,12 @@ const routes = [
         name: 'History',
         component: () => import('../views/History.vue'),
         meta: { title: '历史记录' }
+      },
+      {
+        path: 'groups',
+        name: 'Groups',
+        component: () => import('../views/Groups.vue'),
+        meta: { title: '分组概率设置' }
       }
     ]
   }

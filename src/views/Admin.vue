@@ -20,6 +20,10 @@
             <span class="nav-icon">🏆</span>
             <span class="nav-text">奖项设置</span>
           </router-link>
+          <router-link to="/admin/groups" class="nav-item">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-text">分组概率设置</span>
+          </router-link>
           <router-link to="/admin/history" class="nav-item">
             <span class="nav-icon">📋</span>
             <span class="nav-text">历史记录</span>

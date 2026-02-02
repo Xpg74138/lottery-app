@@ -47,6 +47,15 @@
               required
             />
           </div>
+          <div class="form-group">
+            <label for="group">分组</label>
+            <input 
+              type="text" 
+              id="group" 
+              v-model="newParticipant.group" 
+              placeholder="请输入分组（可选）" 
+            />
+          </div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn-primary">添加</button>
@@ -71,6 +80,7 @@
             <th>序号</th>
             <th>姓名</th>
             <th>编号</th>
+            <th>分组</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -79,19 +89,65 @@
             <td>{{ index + 1 }}</td>
             <td>{{ participant.name }}</td>
             <td>{{ participant.id }}</td>
+            <td>{{ participant.group || '未分组' }}</td>
             <td>
+              <button class="btn-secondary btn-sm" @click="editParticipant(participant)">
+                编辑
+              </button>
               <button class="btn-danger btn-sm" @click="removeParticipant(participant.id)">
                 删除
               </button>
             </td>
           </tr>
           <tr v-if="filteredParticipants.length === 0">
-            <td colspan="4" class="empty-state">
+            <td colspan="5" class="empty-state">
               {{ participants.length === 0 ? '暂无参与者，请添加' : '未找到匹配的参与者' }}
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- 编辑参与者表单 -->
+    <div class="edit-form" v-if="showEditForm">
+      <h3>编辑参与者</h3>
+      <form @submit.prevent="updateParticipant">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-name">姓名</label>
+            <input 
+              type="text" 
+              id="edit-name" 
+              v-model="editingParticipant.name" 
+              placeholder="请输入姓名" 
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-id">编号</label>
+            <input 
+              type="text" 
+              id="edit-id" 
+              v-model="editingParticipant.id" 
+              placeholder="请输入编号" 
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-group">分组</label>
+            <input 
+              type="text" 
+              id="edit-group" 
+              v-model="editingParticipant.group" 
+              placeholder="请输入分组（可选）" 
+            />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">保存</button>
+          <button type="button" class="btn-secondary" @click="showEditForm = false">取消</button>
+        </div>
+      </form>
     </div>
 
     <!-- 导入提示 -->
@@ -112,7 +168,9 @@ import { ref, computed, onMounted } from 'vue'
 
 // 响应式数据
 const showAddForm = ref(false)
-const newParticipant = ref({ name: '', id: '' })
+const showEditForm = ref(false)
+const newParticipant = ref({ name: '', id: '', group: '' })
+const editingParticipant = ref({ id: '', name: '', group: '' })
 const searchKeyword = ref('')
 const fileInput = ref(null)
 const participants = ref([])
@@ -125,7 +183,8 @@ const filteredParticipants = computed(() => {
   const keyword = searchKeyword.value.toLowerCase()
   return participants.value.filter(p => 
     p.name.toLowerCase().includes(keyword) || 
-    p.id.toLowerCase().includes(keyword)
+    p.id.toLowerCase().includes(keyword) ||
+    (p.group && p.group.toLowerCase().includes(keyword))
   )
 })
 
@@ -171,17 +230,55 @@ const addParticipant = () => {
   // 添加参与者
   participants.value.push({
     id: newParticipant.value.id.trim(),
-    name: newParticipant.value.name.trim()
+    name: newParticipant.value.name.trim(),
+    group: newParticipant.value.group.trim() || ''
   })
 
   // 保存到本地存储
   saveParticipants()
 
   // 重置表单
-  newParticipant.value = { name: '', id: '' }
+  newParticipant.value = { name: '', id: '', group: '' }
   showAddForm.value = false
 
   alert('添加成功！')
+}
+
+const editParticipant = (participant) => {
+  // 复制参与者信息到编辑表单
+  editingParticipant.value = { ...participant }
+  showEditForm.value = true
+  showAddForm.value = false
+}
+
+const updateParticipant = () => {
+  // 验证数据
+  if (!editingParticipant.value.name.trim() || !editingParticipant.value.id.trim()) {
+    alert('请填写完整的参与者信息')
+    return
+  }
+
+  // 检查是否重复（排除当前参与者）
+  const isDuplicate = participants.value.some(p => 
+    p.id === editingParticipant.value.id && p.id !== editingParticipant.value.id
+  )
+  if (isDuplicate) {
+    alert('该编号的参与者已存在')
+    return
+  }
+
+  // 更新参与者
+  const index = participants.value.findIndex(p => p.id === editingParticipant.value.id)
+  if (index !== -1) {
+    participants.value[index] = {
+      id: editingParticipant.value.id.trim(),
+      name: editingParticipant.value.name.trim(),
+      group: editingParticipant.value.group.trim() || ''
+    }
+    saveParticipants()
+    showEditForm.value = false
+    alert('更新成功！')
+  }
 }
 
 const removeParticipant = (id) => {
@@ -229,6 +326,7 @@ const handleFileImport = (event) => {
 
         const name = parts[0].trim()
         const id = parts[1].trim()
+        const group = parts[2] ? parts[2].trim() : ''
 
         if (!name || !id) {
           console.warn(`第${index + 1}行缺少信息：${line}`)
@@ -243,7 +341,7 @@ const handleFileImport = (event) => {
           return
         }
 
-        importedParticipants.push({ id, name })
+        importedParticipants.push({ id, name, group })
         successCount++
       })
 
