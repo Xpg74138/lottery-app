@@ -1,0 +1,2987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>春节联欢抽奖</title>
+    <!-- CDN 引入 Vue 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.min.js"></script>
+    <!-- CDN 引入 Vue Router -->
+    <script src="https://cdn.jsdelivr.net/npm/vue-router@4.4.5/dist/vue-router.global.prod.min.js"></script>
+    <!-- 统一的 CSS 样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #8B0000 100%);
+            color: #FFD700;
+            overflow: hidden;
+        }
+        
+        #app {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #8B0000 100%);
+            color: #FFD700;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 春节主题背景 */
+        .spring-festival-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* 红灯笼 */
+        .lantern {
+            position: absolute;
+            top: 20px;
+            width: 80px;
+            height: 120px;
+            animation: swing 3s ease-in-out infinite;
+        }
+
+        .lantern-left {
+            left: 30px;
+        }
+
+        .lantern-right {
+            right: 30px;
+            animation-delay: 1.5s;
+        }
+
+        .lantern-body {
+            width: 80px;
+            height: 100px;
+            background: linear-gradient(180deg, #FF0000 0%, #CC0000 100%);
+            border-radius: 40px 40px 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6), inset 0 0 20px rgba(255, 200, 0, 0.3);
+            border: 3px solid #FFD700;
+        }
+
+        .lantern-text {
+            font-size: 40px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .lantern-tassel {
+            width: 4px;
+            height: 30px;
+            background: #FFD700;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .lantern-tassel::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -8px;
+            width: 20px;
+            height: 20px;
+            background: #FFD700;
+            border-radius: 50%;
+        }
+
+        @keyframes swing {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* 中国结 */
+        .chinese-knot {
+            position: absolute;
+            font-size: 40px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .knot-left {
+            left: 120px;
+            top: 80px;
+        }
+
+        .knot-right {
+            right: 120px;
+            top: 80px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 烟花效果 */
+        .fireworks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: firework 3s ease-out infinite;
+        }
+
+        .firework::before,
+        .firework::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: firework 3s ease-out infinite;
+        }
+
+        .firework:nth-child(1) { background: #FFD700; box-shadow: 0 0 10px #FFD700; }
+        .firework:nth-child(2) { background: #FF69B4; box-shadow: 0 0 10px #FF69B4; }
+        .firework:nth-child(3) { background: #00CED1; box-shadow: 0 0 10px #00CED1; }
+        .firework:nth-child(4) { background: #FF6347; box-shadow: 0 0 10px #FF6347; }
+        .firework:nth-child(5) { background: #7FFF00; box-shadow: 0 0 10px #7FFF00; }
+
+        @keyframes firework {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(20);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(40);
+                opacity: 0;
+            }
+        }
+
+        /* 飘落的福字 */
+        .floating-fu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .fu-item {
+            position: absolute;
+            top: -50px;
+            font-size: 30px;
+            color: rgba(255, 215, 0, 0.6);
+            animation: fall linear infinite;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 背景图案 */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 0, 0, 0.2) 0%, transparent 30%);
+            pointer-events: none;
+        }
+        
+        /* 顶部导航 */
+        .header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid #FFD700;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .title-decoration {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .decoration-item {
+            font-size: 30px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            letter-spacing: 8px;
+        }
+        
+        .header nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .header nav a {
+            color: #FFD700;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid #FFD700;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .header nav a:hover {
+            background: #FFD700;
+            color: #8B0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px;
+            gap: 30px;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+        }
+        
+        /* 左侧抽奖区域 */
+        .lottery-section {
+            flex: 0 0 auto;
+            width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* 右侧中奖结果区域 */
+        .results-section {
+            flex: 0 0 auto;
+            width: 300px;
+            height: 600px;
+        }
+        
+        /* 动画效果 */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* 奖项等级选择 */
+        .award-level-selection {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid #FFD700;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .award-level-selection h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #FFD700;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .level-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .level-buttons button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            font-size: 15px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .level-buttons button:hover:not(:disabled) {
+            background: #FFD700;
+            color: #8B0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .level-buttons button.active {
+            background: #FFD700;
+            color: #8B0000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .level-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 奖品选择 */
+        .prize-selection {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid #FFD700;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .prize-selection h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #FFD700;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .prize-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .prize-item {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .prize-item:hover:not(.disabled) {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .prize-item.active {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: #8B0000;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+        }
+
+        .prize-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: rgba(128, 128, 128, 0.2);
+        }
+
+        .prize-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .prize-count {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* 奖品空状态样式 */
+        .prize-empty {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: rgba(255, 215, 0, 0.6);
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+        }
+
+        .prize-empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.6;
+        }
+
+        .prize-empty p {
+            margin: 5px 0;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        /* 抽奖显示区域 */
+        .lottery-display {
+            flex: 1;
+            min-height: 300px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            border: 3px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .lottery-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 215, 0, 0.1) 50%,
+                transparent 70%
+            );
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .display-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            padding: 40px;
+        }
+
+        /* 滚动效果 */
+        .spinning-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinning-names {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .name-item {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: nameFlash 0.1s ease-in-out;
+        }
+
+        @keyframes nameFlash {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* 中奖结果 */
+        .result-container {
+            text-align: center;
+            animation: resultAppear 0.5s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        @keyframes resultAppear {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .result-badge {
+            font-size: 28px;
+            color: #FFD700;
+            margin-bottom: 30px;
+            animation: badgePulse 1s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .winner-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .winner-name {
+            font-size: 64px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.7);
+            animation: winnerGlow 2s ease-in-out infinite;
+            margin: 0;
+        }
+
+        @keyframes winnerGlow {
+            0%, 100% { text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.7); }
+            50% { text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), 0 0 60px rgba(255, 215, 0, 1); }
+        }
+
+        /* 初始状态 */
+        .placeholder {
+            text-align: center;
+        }
+
+        .placeholder-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: iconBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .placeholder h3 {
+            font-size: 24px;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .placeholder p {
+            font-size: 16px;
+            color: rgba(255, 215, 0, 0.7);
+        }
+
+        /* 控制按钮 */
+        .lottery-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .control-button {
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button-icon {
+            font-size: 20px;
+        }
+
+        .control-button.start {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #8B0000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .control-button.start:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6);
+        }
+
+        .control-button.stop {
+            background: linear-gradient(135deg, #FF6347 0%, #DC143C 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
+        }
+
+        .control-button.stop:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 99, 71, 0.6);
+        }
+
+        .control-button.reset {
+            background: rgba(255, 255, 255, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+
+        .control-button.reset:hover:not(:disabled) {
+            background: rgba(255, 215, 0, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 参与人数信息 */
+        .participants-info {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: rgba(255, 215, 0, 0.8);
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* 右侧中奖结果展示 */
+        .results-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            border: 3px solid #FFD700;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .results-header {
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.2);
+            border-bottom: 2px solid #FFD700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-header h2 {
+            font-size: 20px;
+            color: #FFD700;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: rgba(255, 215, 0, 0.8);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        .results-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .results-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .results-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .results-list::-webkit-scrollbar-thumb {
+            background: #FFD700;
+            border-radius: 3px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid #FFD700;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .result-card.level-first { border-left-color: #FF6B6B; }
+        .result-card.level-second { border-left-color: #4ECDC4; }
+        .result-card.level-third { border-left-color: #45B7D1; }
+        .result-card.level-lucky { border-left-color: #96CEB4; }
+
+        .result-rank {
+            width: 28px;
+            height: 28px;
+            background: #FFD700;
+            color: #8B0000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .result-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-winner {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .winner-name-small {
+            font-weight: bold;
+            color: #FFD700;
+            font-size: 15px;
+        }
+
+        .winner-id-small {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .result-prize {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .prize-level-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+        }
+
+        .prize-name-small {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .result-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-results {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .empty-results p {
+            color: rgba(255, 215, 0, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .empty-hint {
+            font-size: 14px;
+            color: rgba(255, 215, 0, 0.5);
+        }
+
+        /* 管理面板 */
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            border: 2px solid #FFD700;
+        }
+
+        .admin-container h2 {
+            margin-bottom: 30px;
+            color: #FFD700;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .admin-nav button {
+            padding: 12px 24px;
+            border-radius: 25px;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .admin-nav button:hover {
+            background: #FFD700;
+            color: #8B0000;
+            transform: translateY(-2px);
+        }
+
+        .admin-nav button.active {
+            background: #FFD700;
+            color: #8B0000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .admin-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .admin-form input,
+        .admin-form select,
+        .admin-form button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .admin-form input,
+        .admin-form select {
+            background: rgba(0, 0, 0, 0.3);
+            color: #FFD700;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            min-width: 200px;
+        }
+
+        .admin-form button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #8B0000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admin-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .participants-list,
+        .awards-list,
+        .history-list {
+            margin-bottom: 30px;
+        }
+
+        .participant-item,
+        .award-item,
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .participant-item button,
+        .award-item button,
+        .history-item button {
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: rgba(255, 99, 71, 0.8);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .participant-item button:hover,
+        .award-item button:hover {
+            background: rgba(255, 99, 71, 1);
+            transform: translateY(-1px);
+        }
+
+        .clear-history-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: rgba(255, 99, 71, 0.8);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history-btn:hover {
+            background: rgba(255, 99, 71, 1);
+            transform: translateY(-2px);
+        }
+
+        /* 管理面板样式 */
+        .admin {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #8B0000 100%);
+            color: #FFD700;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-header {
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid #FFD700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .admin-header nav a {
+            color: #FFD700;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid #FFD700;
+        }
+
+        .admin-header nav a:hover {
+            background: #FFD700;
+            color: #8B0000;
+            transform: translateY(-2px);
+        }
+
+        .admin-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .admin-sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 2px solid #FFD700;
+            padding: 20px 0;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #FFD700;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: #FFD700;
+            color: #8B0000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        .nav-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-content h2 {
+            margin-bottom: 30px;
+            color: #FFD700;
+            font-size: 24px;
+        }
+
+        /* 操作按钮区域 */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #8B0000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 215, 0, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #FF6347 0%, #DC143C 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 99, 71, 0.6);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        /* 表单样式 */
+        .add-form,
+        .edit-form {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 2px solid #FFD700;
+        }
+
+        .add-form h3,
+        .edit-form h3 {
+            margin-bottom: 20px;
+            color: #FFD700;
+            font-size: 18px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #FFD700;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFD700;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* 颜色选择器 */
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .color-picker input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .color-value {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            min-width: 80px;
+        }
+
+        /* 搜索栏 */
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFD700;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            font-size: 16px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        /* 表格样式 */
+        .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #FFD700;
+        }
+
+        .participants-table th,
+        .participants-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .participants-table th {
+            background: rgba(255, 215, 0, 0.2);
+            font-weight: 600;
+            color: #FFD700;
+        }
+
+        .participants-table tr:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 215, 0, 0.6);
+            font-style: italic;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+        }
+
+        /* 导入提示 */
+        .import-tips {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .import-tips h4 {
+            margin-bottom: 10px;
+            color: #FFD700;
+            font-size: 16px;
+        }
+
+        .import-tips ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .import-tips li {
+            margin-bottom: 8px;
+        }
+
+        /* 奖项网格 */
+        .awards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .award-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #FFD700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .award-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .award-info h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #FFD700;
+        }
+
+        .award-info p {
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .color-preview {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .award-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 历史记录 */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #FFD700;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .history-item:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: translateX(5px);
+        }
+
+        .history-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .history-winner {
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .history-prize {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .history-level {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+        }
+
+        .history-time {
+            font-size: 14px;
+            color: rgba(255, 215, 0, 0.6);
+        }
+
+        /* 分组概率设置 */
+        .groups-content {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            border-radius: 8px;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            text-align: center;
+        }
+
+        .groups-content p {
+            color: rgba(255, 215, 0, 0.6);
+            font-size: 18px;
+        }
+
+        /* 响应式设计 */
+        @media screen and (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .lottery-section {
+                max-width: 100%;
+            }
+            
+            .results-section {
+                width: 100%;
+                min-width: auto;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .level-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .level-buttons button {
+                width: 150px;
+            }
+            
+            .prize-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .lottery-display {
+                min-height: 250px;
+            }
+            
+            .winner-name {
+                font-size: 36px;
+            }
+            
+            .lottery-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-button {
+                width: 200px;
+                justify-content: center;
+            }
+            
+            /* 管理面板响应式 */
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid #FFD700;
+                padding: 10px 0;
+            }
+            
+            .sidebar-nav {
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 0 10px;
+            }
+            
+            .nav-item {
+                white-space: nowrap;
+                margin: 0;
+            }
+            
+            .admin-content {
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .form-group {
+                min-width: 100%;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions button {
+                width: 100%;
+            }
+            
+            .awards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .color-picker {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .color-value {
+                min-width: auto;
+            }
+            
+            .history-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 春节主题背景元素 -->
+        <div class="spring-festival-bg">
+            <!-- 红灯笼 -->
+            <div class="lantern lantern-left">
+                <div class="lantern-body">
+                    <div class="lantern-text">福</div>
+                </div>
+                <div class="lantern-tassel"></div>
+            </div>
+            <div class="lantern lantern-right">
+                <div class="lantern-body">
+                    <div class="lantern-text">春</div>
+                </div>
+                <div class="lantern-tassel"></div>
+            </div>
+            
+            <!-- 中国结 -->
+            <div class="chinese-knot knot-left">🧧</div>
+            <div class="chinese-knot knot-right">🧧</div>
+            
+            <!-- 烟花效果 -->
+            <div class="fireworks">
+                <div class="firework" v-for="n in 5" :key="n" :style="getFireworkStyle(n)"></div>
+            </div>
+            
+            <!-- 飘落的福字 -->
+            <div class="floating-fu">
+                <div class="fu-item" v-for="n in 8" :key="n" :style="getFuStyle(n)">福</div>
+            </div>
+            
+            <!-- 背景装饰 -->
+            <div class="bg-pattern"></div>
+        </div>
+
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="title-decoration">
+                <span class="decoration-item">🏮</span>
+                <h1>2025年终汇报抽奖</h1>
+                <span class="decoration-item">🏮</span>
+            </div>
+            <nav>
+                <router-link to="/">抽奖首页</router-link>
+                <router-link to="/admin">管理面板</router-link>
+            </nav>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <router-view v-slot="{ Component }">
+                <transition name="fade" mode="out-in">
+                    <component :is="Component" />
+                </transition>
+            </router-view>
+        </main>
+    </div>
+
+    <script>
+        // 音效管理
+        const audioManager = {
+            sounds: {
+                click: new Audio('sounds/click.mp3'),
+                goodLuck: new Audio('sounds/goodluck.m4a'),
+                win: new Audio('sounds/win.mp3')
+            },
+            play: function(soundName) {
+                const sound = this.sounds[soundName];
+                if (sound) {
+                    sound.currentTime = 0;
+                    sound.play().catch(e => console.log('音效播放失败:', e));
+                }
+            },
+            playGoodLuck: function() {
+                const goodLuck = this.sounds.goodLuck;
+                if (goodLuck) {
+                    goodLuck.loop = false;
+                    goodLuck.volume = 0.5; // 音量适中
+                    goodLuck.currentTime = 0;
+                    goodLuck.play().catch(e => console.log('好运来播放失败:', e));
+                }
+            },
+            stopGoodLuck: function() {
+                const goodLuck = this.sounds.goodLuck;
+                if (goodLuck) {
+                    goodLuck.pause();
+                    goodLuck.currentTime = 0;
+                }
+            }
+        };
+
+        // 全局数据存储
+        const storage = {
+            get: (key) => {
+                try {
+                    return JSON.parse(localStorage.getItem(key) || 'null');
+                } catch (error) {
+                    console.error('读取本地存储失败:', error);
+                    return null;
+                }
+            },
+            set: (key, value) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                } catch (error) {
+                    console.error('保存本地存储失败:', error);
+                }
+            },
+            init: () => {
+                if (!storage.get('participants')) {
+                    storage.set('participants', []);
+                }
+                if (!storage.get('awards')) {
+                    storage.set('awards', []);
+                }
+                if (!storage.get('history')) {
+                    storage.set('history', []);
+                }
+            }
+        };
+
+        // 初始化本地存储
+        storage.init();
+
+        // 奖项等级配置
+        const awardLevels = [
+            { label: '一等奖', value: 'first', color: '#FF6B6B' },
+            { label: '二等奖', value: 'second', color: '#4ECDC4' },
+            { label: '三等奖', value: 'third', color: '#45B7D1' },
+            { label: '幸运奖', value: 'lucky', color: '#96CEB4' }
+        ];
+
+        // 抽奖首页组件
+        const Home = {
+            template: `
+                <div style="display: flex; gap: 30px; align-items: flex-start;">
+                    <!-- 左侧抽奖区域 -->
+                    <div class="lottery-section">
+                        <!-- 奖项等级选择 -->
+                        <div class="award-level-selection">
+                            <h2>🎁 选择奖项等级</h2>
+                            <div class="level-buttons">
+                                <button 
+                                    v-for="level in awardLevels" 
+                                    :key="level.value"
+                                    :class="{ active: selectedLevel === level.value }"
+                                    @click="selectLevel(level.value)"
+                                    :disabled="isSpinning"
+                                >
+                                    {{ level.label }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 具体奖品选择 -->
+                        <div class="prize-selection">
+                            <h3>🎊 选择具体奖品</h3>
+                            <div class="prize-list">
+                                <div 
+                                    v-for="prize in availablePrizes" 
+                                    :key="prize.id"
+                                    class="prize-item"
+                                    :class="{ active: selectedPrize === prize.id, disabled: prize.remaining === 0 }"
+                                    @click="selectPrize(prize)"
+                                >
+                                    <div class="prize-name">{{ prize.name }}</div>
+                                    <div class="prize-count">
+                                        剩余: {{ prize.remaining }} / {{ prize.count }}
+                                    </div>
+                                </div>
+                                <div v-if="availablePrizes.length === 0" class="prize-empty">
+                                    <div class="prize-empty-icon">🎁</div>
+                                    <p v-if="!selectedLevel">请先选择奖项等级</p>
+                                    <p v-else>当前奖项等级暂无可用奖品</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 抽奖显示区域 -->
+                        <div class="lottery-display" :class="{ 'has-result': currentResult }">
+                            <div class="display-content">
+                                <!-- 滚动效果 -->
+                                <div class="spinning-container" v-if="isSpinning">
+                                    <div class="spinning-names">
+                                        <div v-for="(name, index) in spinningNames" :key="index" class="name-item">
+                                            {{ name }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 中奖结果 -->
+                                <div class="result-container" v-else-if="currentResult">
+                                    <div class="result-badge">🎉 恭喜中奖 🎉</div>
+                                    <div class="winner-info">
+                                        <div class="winner-name">{{ currentResult.name }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 初始状态 -->
+                                <div class="placeholder" v-else>
+                                    <div class="placeholder-icon">🎲</div>
+                                    <h3>请选择奖项开始抽奖</h3>
+                                    <p>祝您好运！</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 控制按钮 -->
+                        <div class="lottery-controls">
+                            <button 
+                                class="control-button start" 
+                                @click="startLottery"
+                                :disabled="isSpinning || !canStartLottery"
+                            >
+                                <span class="button-icon">🎯</span>
+                                {{ isSpinning ? '抽奖中...' : '开始抽奖' }}
+                            </button>
+                            <button 
+                                class="control-button stop" 
+                                @click="stopLottery"
+                                :disabled="!isSpinning"
+                            >
+                                <span class="button-icon">✋</span>
+                                停止抽奖
+                            </button>
+                            <button 
+                                class="control-button reset" 
+                                @click="resetLottery"
+                                :disabled="isSpinning"
+                            >
+                                <span class="button-icon">🔄</span>
+                                重置
+                            </button>
+                        </div>
+
+                        <!-- 剩余参与人数 -->
+                        <div class="participants-info">
+                            <div class="info-item">
+                                <span class="info-label">剩余参与人数:</span>
+                                <span class="info-value">{{ availableParticipants.length }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">已中奖人数:</span>
+                                <span class="info-value">{{ history.length }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧中奖结果展示 -->
+                    <div class="results-section">
+                        <div class="results-panel">
+                            <div class="results-header">
+                                <h2>🏆 中奖榜单</h2>
+                                <div class="results-count">共 {{ history.length }} 人</div>
+                            </div>
+                            
+                            <div class="results-list" v-if="history.length > 0">
+                                <div 
+                                    v-for="(result, index) in sortedHistory" 
+                                    :key="result.id" 
+                                    class="result-card"
+                                    :class="getLevelClass(result.level)"
+                                >
+                                    <div class="result-rank">{{ index + 1 }}</div>
+                                    <div class="result-content">
+                                        <div class="result-winner">
+                                            <span class="winner-name-small">{{ result.participantName }}</span>
+                                            <span class="winner-id-small">{{ result.participantId }}</span>
+                                        </div>
+                                        <div class="result-prize">
+                                            <span class="prize-level-badge">{{ result.levelName }}</span>
+                                            <span class="prize-name-small">{{ result.prizeName }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="result-time">{{ formatTime(result.timestamp) }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="empty-results" v-else>
+                                <div class="empty-icon">🎊</div>
+                                <p>暂无中奖记录</p>
+                                <p class="empty-hint">开始抽奖吧！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                // 响应式数据
+                const selectedLevel = Vue.ref('');
+                const selectedPrize = Vue.ref('');
+                const isSpinning = Vue.ref(false);
+                const currentResult = Vue.ref(null);
+                const spinningNames = Vue.ref([]);
+                const spinningInterval = Vue.ref(null);
+
+                // 从本地存储获取数据
+                const participants = Vue.ref([]);
+                const awards = Vue.ref([]);
+                const history = Vue.ref([]);
+
+                // 计算属性
+                const availableParticipants = Vue.computed(() => {
+                    const winnerIds = history.value.map(h => h.participantId);
+                    return participants.value.filter(p => !winnerIds.includes(p.id));
+                });
+
+                const canStartLottery = Vue.computed(() => {
+                    if (availableParticipants.value.length === 0) return false;
+                    if (!selectedLevel.value) return false;
+                    if (!selectedPrize.value) return false;
+                    return true;
+                });
+
+                const availablePrizes = Vue.computed(() => {
+                    if (!selectedLevel.value) return [];
+                    
+                    return awards.value
+                        .filter(award => {
+                          // 根据奖项名称匹配等级
+                          const awardName = award.name.toLowerCase();
+                          switch (selectedLevel.value) {
+                            case 'first':
+                              return awardName.includes('一等奖') || awardName.includes('1等奖');
+                            case 'second':
+                              return awardName.includes('二等奖') || awardName.includes('2等奖');
+                            case 'third':
+                              return awardName.includes('三等奖') || awardName.includes('3等奖');
+                            case 'lucky':
+                              return awardName.includes('幸运奖');
+                            default:
+                              return false;
+                          }
+                        })
+                        .map(award => {
+                            const usedCount = history.value.filter(h => h.awardId === award.id).length;
+                            let level = selectedLevel.value;
+                            let levelName = awardLevels.find(l => l.value === level)?.label || level;
+                            
+                            return {
+                                ...award,
+                                level,
+                                remaining: Math.max(0, award.count - usedCount),
+                                levelName
+                            };
+                        })
+                        .sort((a, b) => b.remaining - a.remaining);
+                });
+
+                const selectedPrizeInfo = Vue.computed(() => {
+                    if (!selectedPrize.value) return null;
+                    return availablePrizes.value.find(p => p.id === selectedPrize.value);
+                });
+
+                const sortedHistory = Vue.computed(() => {
+                    return [...history.value].reverse();
+                });
+
+                // 生命周期
+                Vue.onMounted(() => {
+                    loadData();
+                });
+
+                // 方法
+                const loadData = () => {
+                    try {
+                        participants.value = storage.get('participants') || [];
+                        awards.value = storage.get('awards') || [];
+                        history.value = storage.get('history') || [];
+                    } catch (error) {
+                        console.error('加载数据失败:', error);
+                    }
+                };
+
+                const saveData = () => {
+                    try {
+                        storage.set('participants', participants.value);
+                        storage.set('awards', awards.value);
+                        storage.set('history', history.value);
+                    } catch (error) {
+                        console.error('保存数据失败:', error);
+                    }
+                };
+
+                const selectLevel = (level) => {
+                    // 播放点击音效
+                    audioManager.play('click');
+                    selectedLevel.value = level;
+                    selectedPrize.value = '';
+                    currentResult.value = null;
+                };
+
+                const selectPrize = (prize) => {
+                    if (prize.remaining === 0 || isSpinning.value) return;
+                    // 播放点击音效
+                    audioManager.play('click');
+                    selectedPrize.value = prize.id;
+                    currentResult.value = null;
+                };
+
+                const startLottery = () => {
+                    if (!canStartLottery.value) return;
+                    
+                    // 播放《好运来》
+                    audioManager.playGoodLuck();
+                    
+                    isSpinning.value = true;
+                    currentResult.value = null;
+                    
+                    // 生成滚动名字
+                    generateSpinningNames();
+                    
+                    // 开始滚动动画
+                    spinningInterval.value = setInterval(() => {
+                        generateSpinningNames();
+                    }, 80);
+                };
+
+                const stopLottery = () => {
+                    if (!isSpinning.value) return;
+                    
+                    isSpinning.value = false;
+                    
+                    // 停止滚动动画
+                    if (spinningInterval.value) {
+                        clearInterval(spinningInterval.value);
+                        spinningInterval.value = null;
+                    }
+                    
+                    // 停止播放《好运来》
+                    audioManager.stopGoodLuck();
+                    
+                    // 生成抽奖结果
+                    generateLotteryResult();
+                };
+
+                const resetLottery = () => {
+                    isSpinning.value = false;
+                    currentResult.value = null;
+                    spinningNames.value = [];
+                    selectedLevel.value = '';
+                    selectedPrize.value = '';
+                    
+                    if (spinningInterval.value) {
+                        clearInterval(spinningInterval.value);
+                        spinningInterval.value = null;
+                    }
+                };
+
+                const generateSpinningNames = () => {
+                    const names = availableParticipants.value.map(p => p.name);
+                    if (names.length === 0) return;
+                    
+                    const spinning = [];
+                    for (let i = 0; i < 5; i++) {
+                        const randomIndex = Math.floor(Math.random() * names.length);
+                        spinning.push(names[randomIndex]);
+                    }
+                    spinningNames.value = spinning;
+                };
+
+                const generateLotteryResult = () => {
+                    if (availableParticipants.value.length === 0) {
+                        alert('所有参与者都已中奖！');
+                        return;
+                    }
+                    
+                    // 随机选择中奖者
+                    const randomIndex = Math.floor(Math.random() * availableParticipants.value.length);
+                    const winner = availableParticipants.value[randomIndex];
+                    const prize = selectedPrizeInfo.value;
+                    
+                    if (!prize) {
+                        alert('奖品信息错误！');
+                        return;
+                    }
+                    
+                    // 生成抽奖记录
+                    const lotteryRecord = {
+                        id: Date.now().toString(),
+                        participantId: winner.id,
+                        participantName: winner.name,
+                        awardId: prize.id,
+                        prizeName: prize.name,
+                        level: prize.level,
+                        levelName: prize.levelName,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // 更新本地存储
+                    history.value.push(lotteryRecord);
+                    saveData();
+                    
+                    // 播放中奖音效
+                    audioManager.play('win');
+                    
+                    // 更新当前结果
+                    currentResult.value = {
+                        ...winner,
+                        prizeName: prize.name,
+                        levelName: prize.levelName
+                    };
+                };
+
+                const getLevelClass = (level) => {
+                    const classMap = {
+                        'special': 'level-special',
+                        'first': 'level-first',
+                        'second': 'level-second',
+                        'third': 'level-third',
+                        'lucky': 'level-lucky'
+                    };
+                    return classMap[level] || '';
+                };
+
+                const formatTime = (timestamp) => {
+                    const date = new Date(timestamp);
+                    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                };
+
+                // 春节主题动画样式
+                const getFireworkStyle = (n) => {
+                    const positions = [
+                        { left: '10%', top: '20%' },
+                        { left: '85%', top: '15%' },
+                        { left: '20%', top: '60%' },
+                        { left: '75%', top: '50%' },
+                        { left: '50%', top: '30%' }
+                    ];
+                    const delays = ['0s', '0.5s', '1s', '1.5s', '2s'];
+                    const pos = positions[(n - 1) % positions.length];
+                    return {
+                        left: pos.left,
+                        top: pos.top,
+                        animationDelay: delays[(n - 1) % delays.length]
+                    };
+                };
+
+                const getFuStyle = (n) => {
+                    const left = (n - 1) * 12 + 5;
+                    const delay = (n - 1) * 0.8;
+                    const duration = 8 + Math.random() * 4;
+                    return {
+                        left: `${left}%`,
+                        animationDelay: `${delay}s`,
+                        animationDuration: `${duration}s`
+                    };
+                };
+
+                return {
+                    // 响应式数据
+                    selectedLevel,
+                    selectedPrize,
+                    isSpinning,
+                    currentResult,
+                    spinningNames,
+                    participants,
+                    awards,
+                    history,
+                    awardLevels,
+                    
+                    // 计算属性
+                    availableParticipants,
+                    canStartLottery,
+                    availablePrizes,
+                    selectedPrizeInfo,
+                    sortedHistory,
+                    
+                    // 方法
+                    selectLevel,
+                    selectPrize,
+                    startLottery,
+                    stopLottery,
+                    resetLottery,
+                    getLevelClass,
+                    formatTime,
+                    getFireworkStyle,
+                    getFuStyle
+                };
+            }
+        };
+
+        // 管理面板组件
+        const Admin = {
+            template: `
+                <div class="admin">
+                    <!-- 顶部导航 -->
+                    <header class="admin-header">
+                        <h1>管理员控制面板</h1>
+                        <nav>
+                            <router-link to="/">返回抽奖首页</router-link>
+                        </nav>
+                    </header>
+
+                    <!-- 侧边栏导航 -->
+                    <div class="admin-container">
+                        <aside class="admin-sidebar">
+                            <nav class="sidebar-nav">
+                                <button @click="showAdminTab('participants')" class="nav-item" :class="{ active: currentAdminTab === 'participants' }">
+                                    <span class="nav-icon">👥</span>
+                                    <span class="nav-text">参与者管理</span>
+                                </button>
+                                <button @click="showAdminTab('awards')" class="nav-item" :class="{ active: currentAdminTab === 'awards' }">
+                                    <span class="nav-icon">🏆</span>
+                                    <span class="nav-text">奖项设置</span>
+                                </button>
+                                <button @click="showAdminTab('groups')" class="nav-item" :class="{ active: currentAdminTab === 'groups' }">
+                                    <span class="nav-icon">🎯</span>
+                                    <span class="nav-text">分组概率设置</span>
+                                </button>
+                                <button @click="showAdminTab('history')" class="nav-item" :class="{ active: currentAdminTab === 'history' }">
+                                    <span class="nav-icon">📋</span>
+                                    <span class="nav-text">历史记录</span>
+                                </button>
+                            </nav>
+                        </aside>
+
+                        <!-- 主内容区域 -->
+                        <main class="admin-content">
+                            <!-- 参与者管理 -->
+                            <div v-if="currentAdminTab === 'participants'">
+                                <h2>参与者管理</h2>
+                                
+                                <!-- 操作按钮区域 -->
+                                <div class="action-buttons">
+                                    <button class="btn-primary" @click="showAddForm = true">
+                                        ➕ 手动添加
+                                    </button>
+                                    <button class="btn-secondary" @click="triggerFileInput">
+                                        📁 批量导入
+                                    </button>
+                                    <button class="btn-danger" @click="clearAllParticipants" :disabled="participants.length === 0">
+                                        🗑️ 清空所有
+                                    </button>
+                                    <input 
+                                        type="file" 
+                                        ref="fileInput" 
+                                        accept=".csv,.txt" 
+                                        style="display: none" 
+                                        @change="handleFileImport"
+                                    />
+                                </div>
+
+                                <!-- 手动添加表单 -->
+                                <div class="add-form" v-if="showAddForm">
+                                    <h3>手动添加参与者</h3>
+                                    <form @submit.prevent="addParticipant">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="name">姓名</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="name" 
+                                                    v-model="newParticipant.name" 
+                                                    placeholder="请输入姓名" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="id">编号</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="id" 
+                                                    v-model="newParticipant.id" 
+                                                    placeholder="请输入编号" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="group">分组</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="group" 
+                                                    v-model="newParticipant.group" 
+                                                    placeholder="请输入分组（可选）" 
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">添加</button>
+                                            <button type="button" class="btn-secondary" @click="showAddForm = false">取消</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- 参与者列表 -->
+                                <div class="participants-list">
+                                    <h3>参与者列表 ({{ participants.length }}人)</h3>
+                                    <div class="search-bar">
+                                        <input 
+                                            type="text" 
+                                            v-model="searchKeyword" 
+                                            placeholder="搜索参与者姓名或编号"
+                                        />
+                                    </div>
+                                    <table class="participants-table">
+                                        <thead>
+                                            <tr>
+                                                <th>序号</th>
+                                                <th>姓名</th>
+                                                <th>编号</th>
+                                                <th>分组</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(participant, index) in filteredParticipants" :key="participant.id">
+                                                <td>{{ index + 1 }}</td>
+                                                <td>{{ participant.name }}</td>
+                                                <td>{{ participant.id }}</td>
+                                                <td>{{ participant.group || '未分组' }}</td>
+                                                <td>
+                                                    <button class="btn-secondary btn-sm" @click="editParticipant(participant)">
+                                                        编辑
+                                                    </button>
+                                                    <button class="btn-danger btn-sm" @click="removeParticipant(participant.id)">
+                                                        删除
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="filteredParticipants.length === 0">
+                                                <td colspan="5" class="empty-state">
+                                                    {{ participants.length === 0 ? '暂无参与者，请添加' : '未找到匹配的参与者' }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- 编辑参与者表单 -->
+                                <div class="edit-form" v-if="showEditForm">
+                                    <h3>编辑参与者</h3>
+                                    <form @submit.prevent="updateParticipant">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="edit-name">姓名</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="edit-name" 
+                                                    v-model="editingParticipant.name" 
+                                                    placeholder="请输入姓名" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-id">编号</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="edit-id" 
+                                                    v-model="editingParticipant.id" 
+                                                    placeholder="请输入编号" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-group">分组</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="edit-group" 
+                                                    v-model="editingParticipant.group" 
+                                                    placeholder="请输入分组（可选）" 
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">保存</button>
+                                            <button type="button" class="btn-secondary" @click="showEditForm = false">取消</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- 导入提示 -->
+                                <div class="import-tips" v-if="!showAddForm">
+                                    <h4>批量导入提示：</h4>
+                                    <ul>
+                                        <li>支持 CSV 或 TXT 文件格式</li>
+                                        <li>文件内容格式：姓名,编号（每行一条记录）</li>
+                                        <li>示例：张三,001</li>
+                                        <li>系统会自动去重，避免重复添加</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 奖项设置 -->
+                            <div v-else-if="currentAdminTab === 'awards'">
+                                <h2>奖项设置</h2>
+                                
+                                <!-- 操作按钮区域 -->
+                                <div class="action-buttons">
+                                    <button class="btn-primary" @click="showAddForm = true">
+                                        ➕ 添加奖项
+                                    </button>
+                                    <button class="btn-danger" @click="clearAllAwards" :disabled="awards.length === 0">
+                                        🗑️ 清空所有
+                                    </button>
+                                </div>
+
+                                <!-- 添加奖项表单 -->
+                                <div class="add-form" v-if="showAddForm">
+                                    <h3>添加奖项</h3>
+                                    <form @submit.prevent="addAward">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="award-name">奖项名称</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="award-name" 
+                                                    v-model="newAward.name" 
+                                                    placeholder="请输入奖项名称" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="award-count">获奖人数</label>
+                                                <input 
+                                                    type="number" 
+                                                    id="award-count" 
+                                                    v-model.number="newAward.count" 
+                                                    placeholder="请输入获奖人数" 
+                                                    min="1" 
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="award-level">奖项等级</label>
+                                                <select 
+                                                    id="award-level" 
+                                                    v-model="newAward.level" 
+                                                    required
+                                                >
+                                                    <option value="first">一等奖</option>
+                                                    <option value="second">二等奖</option>
+                                                    <option value="third">三等奖</option>
+                                                    <option value="lucky">幸运奖</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="award-color">展示颜色</label>
+                                                <div class="color-picker">
+                                                    <input 
+                                                        type="color" 
+                                                        id="award-color" 
+                                                        v-model="newAward.color" 
+                                                    />
+                                                    <span class="color-value">{{ newAward.color }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">添加</button>
+                                            <button type="button" class="btn-secondary" @click="showAddForm = false">取消</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- 奖项列表 -->
+                                <div class="awards-list">
+                                    <h3>奖项列表 ({{ awards.length }}个)</h3>
+                                    <div class="awards-grid">
+                                        <div 
+                                            v-for="award in awards" 
+                                            :key="award.id" 
+                                            class="award-card"
+                                            :style="{ borderLeftColor: award.color }"
+                                        >
+                                            <div class="award-info">
+                                                <h4>{{ award.name }}</h4>
+                                                <p>奖项等级：{{ getLevelLabel(award.level) }}</p>
+                                                <p>获奖人数：{{ award.count }}名</p>
+                                                <p>展示颜色：<span class="color-preview" :style="{ backgroundColor: award.color }"></span> {{ award.color }}</p>
+                                            </div>
+                                            <div class="award-actions">
+                                                <button class="btn-secondary btn-sm" @click="editAward(award)">
+                                                    编辑
+                                                </button>
+                                                <button class="btn-danger btn-sm" @click="removeAward(award.id)">
+                                                    删除
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div v-if="awards.length === 0" class="empty-state">
+                                            <p>暂无奖项，请添加</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 编辑奖项表单 -->
+                                <div class="edit-form" v-if="showEditForm">
+                                    <h3>编辑奖项</h3>
+                                    <form @submit.prevent="updateAward">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="edit-award-name">奖项名称</label>
+                                                <input 
+                                                    type="text" 
+                                                    id="edit-award-name" 
+                                                    v-model="editingAward.name" 
+                                                    placeholder="请输入奖项名称" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-award-count">获奖人数</label>
+                                                <input 
+                                                    type="number" 
+                                                    id="edit-award-count" 
+                                                    v-model.number="editingAward.count" 
+                                                    placeholder="请输入获奖人数" 
+                                                    min="1" 
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="edit-award-level">奖项等级</label>
+                                                <select 
+                                                    id="edit-award-level" 
+                                                    v-model="editingAward.level" 
+                                                    required
+                                                >
+                                                    <option value="first">一等奖</option>
+                                                    <option value="second">二等奖</option>
+                                                    <option value="third">三等奖</option>
+                                                    <option value="lucky">幸运奖</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-award-color">展示颜色</label>
+                                                <div class="color-picker">
+                                                    <input 
+                                                        type="color" 
+                                                        id="edit-award-color" 
+                                                        v-model="editingAward.color" 
+                                                    />
+                                                    <span class="color-value">{{ editingAward.color }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">保存</button>
+                                            <button type="button" class="btn-secondary" @click="showEditForm = false">取消</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- 分组概率设置 -->
+                            <div v-else-if="currentAdminTab === 'groups'">
+                                <h2>分组概率设置</h2>
+                                <div class="groups-content">
+                                    <p>分组概率设置功能开发中...</p>
+                                </div>
+                            </div>
+
+                            <!-- 历史记录 -->
+                            <div v-else-if="currentAdminTab === 'history'">
+                                <h2>历史记录</h2>
+                                <div class="action-buttons">
+                                    <button class="btn-danger" @click="clearHistory" :disabled="history.length === 0">
+                                        🗑️ 清空所有记录
+                                    </button>
+                                </div>
+                                <div class="history-list">
+                                    <div v-for="record in history" :key="record.id" class="history-item">
+                                        <div class="history-info">
+                                            <span class="history-winner">{{ record.participantName }}</span>
+                                            <span class="history-prize">{{ record.prizeName }}</span>
+                                            <span class="history-level">{{ record.levelName }}</span>
+                                        </div>
+                                        <div class="history-time">{{ formatTime(record.timestamp) }}</div>
+                                    </div>
+                                    <div v-if="history.length === 0" class="empty-state">
+                                        <p>暂无历史记录</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            `,
+            setup() {
+                // 响应式数据
+                const currentAdminTab = Vue.ref('participants');
+                const participants = Vue.ref([]);
+                const awards = Vue.ref([]);
+                const history = Vue.ref([]);
+                
+                // 参与者管理
+                const showAddForm = Vue.ref(false);
+                const showEditForm = Vue.ref(false);
+                const newParticipant = Vue.ref({ name: '', id: '', group: '' });
+                const editingParticipant = Vue.ref({ id: '', name: '', group: '' });
+                const searchKeyword = Vue.ref('');
+                const fileInput = Vue.ref(null);
+                
+                // 奖项管理
+                const newAward = Vue.ref({ name: '', count: 1, level: 'lucky', color: '#e94560' });
+                const editingAward = Vue.ref({ id: '', name: '', count: 1, level: 'lucky', color: '#e94560' });
+
+                // 计算属性
+                const filteredParticipants = Vue.computed(() => {
+                    if (!searchKeyword.value) {
+                        return participants.value;
+                    }
+                    const keyword = searchKeyword.value.toLowerCase();
+                    return participants.value.filter(p => 
+                        p.name.toLowerCase().includes(keyword) || 
+                        p.id.toLowerCase().includes(keyword) ||
+                        (p.group && p.group.toLowerCase().includes(keyword))
+                    );
+                });
+
+                // 生命周期
+                Vue.onMounted(() => {
+                    loadData();
+                });
+
+                // 方法
+                const loadData = () => {
+                    try {
+                        participants.value = storage.get('participants') || [];
+                        awards.value = storage.get('awards') || [];
+                        history.value = storage.get('history') || [];
+                    } catch (error) {
+                        console.error('加载数据失败:', error);
+                    }
+                };
+
+                const saveData = () => {
+                    try {
+                        storage.set('participants', participants.value);
+                        storage.set('awards', awards.value);
+                        storage.set('history', history.value);
+                    } catch (error) {
+                        console.error('保存数据失败:', error);
+                    }
+                };
+
+                const showAdminTab = (tab) => {
+                    currentAdminTab.value = tab;
+                    showAddForm.value = false;
+                    showEditForm.value = false;
+                };
+
+                // 参与者管理方法
+                const addParticipant = () => {
+                    if (!newParticipant.value.name.trim() || !newParticipant.value.id.trim()) {
+                        alert('请填写完整的参与者信息');
+                        return;
+                    }
+
+                    // 检查是否重复
+                    const isDuplicate = participants.value.some(p => p.id === newParticipant.value.id);
+                    if (isDuplicate) {
+                        alert('该编号的参与者已存在');
+                        return;
+                    }
+
+                    const participant = {
+                        id: newParticipant.value.id.trim(),
+                        name: newParticipant.value.name.trim(),
+                        group: newParticipant.value.group.trim() || ''
+                    };
+
+                    participants.value.push(participant);
+                    saveData();
+
+                    newParticipant.value = { name: '', id: '', group: '' };
+                    showAddForm.value = false;
+
+                    alert('添加成功！');
+                };
+
+                const editParticipant = (participant) => {
+                    editingParticipant.value = { ...participant };
+                    showEditForm.value = true;
+                    showAddForm.value = false;
+                };
+
+                const updateParticipant = () => {
+                    if (!editingParticipant.value.name.trim() || !editingParticipant.value.id.trim()) {
+                        alert('请填写完整的参与者信息');
+                        return;
+                    }
+
+                    // 检查是否重复（排除当前参与者）
+                    const isDuplicate = participants.value.some(p => 
+                        p.id === editingParticipant.value.id && p.id !== editingParticipant.value.id
+                    );
+                    if (isDuplicate) {
+                        alert('该编号的参与者已存在');
+                        return;
+                    }
+
+                    const index = participants.value.findIndex(p => p.id === editingParticipant.value.id);
+                    if (index !== -1) {
+                        participants.value[index] = {
+                            id: editingParticipant.value.id.trim(),
+                            name: editingParticipant.value.name.trim(),
+                            group: editingParticipant.value.group.trim() || ''
+                        };
+                        saveData();
+                        showEditForm.value = false;
+                        alert('更新成功！');
+                    }
+                };
+
+                const removeParticipant = (id) => {
+                    if (confirm('确定要删除该参与者吗？')) {
+                        participants.value = participants.value.filter(p => p.id !== id);
+                        saveData();
+                        alert('删除成功！');
+                    }
+                };
+
+                const clearAllParticipants = () => {
+                    if (confirm('确定要清空所有参与者吗？此操作不可恢复！')) {
+                        participants.value = [];
+                        saveData();
+                        alert('清空成功！');
+                    }
+                };
+
+                const triggerFileInput = () => {
+                    fileInput.value.click();
+                };
+
+                const handleFileImport = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const content = e.target.result;
+                            const lines = content.split('\n');
+                            const importedParticipants = [];
+                            let successCount = 0;
+                            let duplicateCount = 0;
+
+                            lines.forEach((line, index) => {
+                                const trimmedLine = line.trim();
+                                if (!trimmedLine) return;
+
+                                const parts = trimmedLine.split(',');
+                                if (parts.length < 2) {
+                                    console.warn(`第${index + 1}行格式错误：${line}`);
+                                    return;
+                                }
+
+                                const name = parts[0].trim();
+                                const id = parts[1].trim();
+                                const group = parts[2] ? parts[2].trim() : '';
+
+                                if (!name || !id) {
+                                    console.warn(`第${index + 1}行缺少信息：${line}`);
+                                    return;
+                                }
+
+                                // 检查是否重复
+                                const isDuplicate = participants.value.some(p => p.id === id) || 
+                                                 importedParticipants.some(p => p.id === id);
+                                if (isDuplicate) {
+                                    duplicateCount++;
+                                    return;
+                                }
+
+                                importedParticipants.push({ id, name, group });
+                                successCount++;
+                            });
+
+                            // 添加到参与者列表
+                            participants.value = [...participants.value, ...importedParticipants];
+                            saveData();
+
+                            // 显示导入结果
+                            alert(`导入完成！\n成功添加：${successCount}人\n重复跳过：${duplicateCount}人`);
+
+                            // 重置文件输入
+                            event.target.value = '';
+                        } catch (error) {
+                            console.error('导入文件失败:', error);
+                            alert('导入文件失败，请检查文件格式');
+                        }
+                    };
+                    reader.onerror = () => {
+                        alert('读取文件失败');
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                };
+
+                // 奖项管理方法
+                const addAward = () => {
+                    if (!newAward.value.name.trim() || newAward.value.count < 1) {
+                        alert('请填写完整的奖项信息');
+                        return;
+                    }
+
+                    // 检查是否重复
+                    const isDuplicate = awards.value.some(a => a.name === newAward.value.name);
+                    if (isDuplicate) {
+                        alert('该奖项名称已存在');
+                        return;
+                    }
+
+                    const award = {
+                        id: Date.now().toString(),
+                        name: newAward.value.name.trim(),
+                        count: newAward.value.count,
+                        level: newAward.value.level,
+                        color: newAward.value.color
+                    };
+
+                    awards.value.push(award);
+                    saveData();
+
+                    newAward.value = { name: '', count: 1, level: 'lucky', color: '#e94560' };
+                    showAddForm.value = false;
+
+                    alert('添加成功！');
+                };
+
+                const editAward = (award) => {
+                    editingAward.value = { ...award };
+                    showEditForm.value = true;
+                    showAddForm.value = false;
+                };
+
+                const updateAward = () => {
+                    if (!editingAward.value.name.trim() || editingAward.value.count < 1) {
+                        alert('请填写完整的奖项信息');
+                        return;
+                    }
+
+                    // 检查是否重复（排除当前奖项）
+                    const isDuplicate = awards.value.some(a => 
+                        a.name === editingAward.value.name && a.id !== editingAward.value.id
+                    );
+                    if (isDuplicate) {
+                        alert('该奖项名称已存在');
+                        return;
+                    }
+
+                    const index = awards.value.findIndex(a => a.id === editingAward.value.id);
+                    if (index !== -1) {
+                        awards.value[index] = { ...editingAward.value };
+                        saveData();
+                        showEditForm.value = false;
+                        alert('更新成功！');
+                    }
+                };
+
+                const removeAward = (id) => {
+                    if (confirm('确定要删除该奖项吗？')) {
+                        awards.value = awards.value.filter(a => a.id !== id);
+                        saveData();
+                        alert('删除成功！');
+                    }
+                };
+
+                const clearAllAwards = () => {
+                    if (confirm('确定要清空所有奖项吗？此操作不可恢复！')) {
+                        awards.value = [];
+                        saveData();
+                        alert('清空成功！');
+                    }
+                };
+
+                const getLevelLabel = (level) => {
+                    const levelMap = {
+                        'first': '一等奖',
+                        'second': '二等奖',
+                        'third': '三等奖',
+                        'lucky': '幸运奖'
+                    };
+                    return levelMap[level] || level;
+                };
+
+                const clearHistory = () => {
+                    if (confirm('确定要清空所有历史记录吗？')) {
+                        history.value = [];
+                        saveData();
+                        alert('清空成功！');
+                    }
+                };
+
+                const formatTime = (timestamp) => {
+                    const date = new Date(timestamp);
+                    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                };
+
+                return {
+                    currentAdminTab,
+                    participants,
+                    awards,
+                    history,
+                    showAddForm,
+                    showEditForm,
+                    newParticipant,
+                    editingParticipant,
+                    searchKeyword,
+                    fileInput,
+                    newAward,
+                    editingAward,
+                    filteredParticipants,
+                    showAdminTab,
+                    addParticipant,
+                    editParticipant,
+                    updateParticipant,
+                    removeParticipant,
+                    clearAllParticipants,
+                    triggerFileInput,
+                    handleFileImport,
+                    addAward,
+                    editAward,
+                    updateAward,
+                    removeAward,
+                    clearAllAwards,
+                    getLevelLabel,
+                    clearHistory,
+                    formatTime
+                };
+            }
+        };
+
+        // 路由配置
+        const routes = [
+            { path: '/', component: Home },
+            { path: '/admin', component: Admin },
+            { path: '/admin/participants', component: Admin },
+            { path: '/admin/awards', component: Admin },
+            { path: '/admin/groups', component: Admin },
+            { path: '/admin/history', component: Admin }
+        ];
+
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHashHistory(),
+            routes
+        });
+
+        // 创建应用
+        const app = Vue.createApp({
+            setup() {
+                // 春节主题动画样式
+                const getFireworkStyle = (n) => {
+                    const positions = [
+                        { left: '10%', top: '20%' },
+                        { left: '85%', top: '15%' },
+                        { left: '20%', top: '60%' },
+                        { left: '75%', top: '50%' },
+                        { left: '50%', top: '30%' }
+                    ];
+                    const delays = ['0s', '0.5s', '1s', '1.5s', '2s'];
+                    const pos = positions[(n - 1) % positions.length];
+                    return {
+                        left: pos.left,
+                        top: pos.top,
+                        animationDelay: delays[(n - 1) % delays.length]
+                    };
+                };
+
+                const getFuStyle = (n) => {
+                    const left = (n - 1) * 12 + 5;
+                    const delay = (n - 1) * 0.8;
+                    const duration = 8 + Math.random() * 4;
+                    return {
+                        left: `${left}%`,
+                        animationDelay: `${delay}s`,
+                        animationDuration: `${duration}s`
+                    };
+                };
+
+                return {
+                    getFireworkStyle,
+                    getFuStyle
+                };
+            }
+        });
+        app.use(router);
+        app.mount('#app');
+    </script>
+</body>
+</html>
