@@ -1,15 +1,3 @@
 [build]
   command = ""
   publish = "."
-  
-[headers]
-  # 允许音频文件的CORS
-  [[headers]]
-    for = "/*.mp3"
-    [headers.values]
-      Access-Control-Allow-Origin = "*"
-  
-  [[headers]]
-    for = "/*.m4a"
-    [headers.values]
-      Access-Control-Allow-Origin = "*"
