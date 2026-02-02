@@ -585,6 +585,170 @@
             50% { text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), 0 0 60px rgba(255, 215, 0, 1); }
         }
 
+        /* 多获奖者逐次显示样式 */
+        .multi-winners-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .multi-winners-badge {
+            font-size: 28px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            animation: badgePulse 1s ease-in-out infinite;
+        }
+
+        .current-winner-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: winnerSlideIn 0.8s ease-out;
+        }
+
+        @keyframes winnerSlideIn {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.9); 
+            }
+            50% {
+                transform: translateY(-5px) scale(1.02);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .current-winner-number {
+            font-size: 24px;
+            color: rgba(255, 215, 0, 0.8);
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .current-winner-name {
+            font-size: 56px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.8);
+            animation: winnerGlow 2s ease-in-out infinite;
+            margin: 0;
+        }
+
+        .current-winner-id {
+            font-size: 24px;
+            color: rgba(255, 215, 0, 0.9);
+            margin-top: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 5px 15px;
+            border-radius: 15px;
+        }
+
+        /* 汇总展示样式 */
+        .summary-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            animation: summaryAppear 0.8s ease-out;
+        }
+
+        @keyframes summaryAppear {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.9); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+
+        .summary-badge {
+            font-size: 32px;
+            color: #FFD700;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: badgePulse 1s ease-in-out infinite;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 700px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .summary-item {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 20px 15px;
+            text-align: center;
+            animation: summaryItemAppear 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        @keyframes summaryItemAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .summary-item-number {
+            font-size: 18px;
+            color: rgba(255, 215, 0, 0.9);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .summary-item-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .summary-item-id {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .summary-prize-name {
+            margin-top: 25px;
+            font-size: 24px;
+            color: #FFD700;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 30px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            animation: summaryPrizeAppear 0.6s ease-out 0.5s forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes summaryPrizeAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* 初始状态 */
         .placeholder {
             text-align: center;
@@ -1779,7 +1943,7 @@
                         </div>
 
                         <!-- 抽奖显示区域 -->
-                        <div class="lottery-display" :class="{ 'has-result': currentResult }">
+                        <div class="lottery-display" :class="{ 'has-result': currentResult || isShowingMultiWinners || isShowingSummary }">
                             <div class="display-content">
                                 <!-- 滚动效果 -->
                                 <div class="spinning-container" v-if="isSpinning">
@@ -1789,7 +1953,36 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- 中奖结果 -->
+                                
+                                <!-- 多获奖者逐次显示 -->
+                                <div class="multi-winners-container" v-else-if="isShowingMultiWinners">
+                                    <div class="multi-winners-badge">🎉 正在揭晓获奖者 🎉</div>
+                                    <div class="current-winner-display" :key="currentWinnerIndex">
+                                        <div class="current-winner-number">第 {{ currentWinnerIndex + 1 }} 位</div>
+                                        <div class="current-winner-name">{{ multiWinners[currentWinnerIndex].name }}</div>
+                                        <div class="current-winner-id">{{ multiWinners[currentWinnerIndex].id }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 汇总展示 -->
+                                <div class="summary-container" v-else-if="isShowingSummary">
+                                    <div class="summary-badge">🏆 获奖名单 🏆</div>
+                                    <div class="summary-grid">
+                                        <div 
+                                            v-for="(winner, index) in multiWinners" 
+                                            :key="winner.id" 
+                                            class="summary-item"
+                                            :style="{ animationDelay: (index * 0.1) + 's' }"
+                                        >
+                                            <div class="summary-item-number">第 {{ index + 1 }} 位</div>
+                                            <div class="summary-item-name">{{ winner.name }}</div>
+                                            <div class="summary-item-id">{{ winner.id }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="summary-prize-name">{{ selectedPrizeInfo?.name }}</div>
+                                </div>
+                                
+                                <!-- 单中奖结果 -->
                                 <div class="result-container" v-else-if="currentResult">
                                     <div class="result-badge">🎉 恭喜中奖 🎉</div>
                                     <div class="winner-info">
@@ -1895,6 +2088,13 @@
                 const spinningNames = Vue.ref([]);
                 const spinningInterval = Vue.ref(null);
 
+                // 多获奖者显示相关状态
+                const isShowingMultiWinners = Vue.ref(false);
+                const isShowingSummary = Vue.ref(false);
+                const multiWinners = Vue.ref([]);
+                const currentWinnerIndex = Vue.ref(0);
+                const multiWinnersInterval = Vue.ref(null);
+
                 // 从本地存储获取数据
                 const participants = Vue.ref([]);
                 const awards = Vue.ref([]);
@@ -1989,6 +2189,7 @@
                     selectedLevel.value = level;
                     selectedPrize.value = '';
                     currentResult.value = null;
+                    resetMultiWinnersState();
                 };
 
                 const selectPrize = (prize) => {
@@ -1997,6 +2198,7 @@
                     audioManager.play('click');
                     selectedPrize.value = prize.id;
                     currentResult.value = null;
+                    resetMultiWinnersState();
                 };
 
                 const startLottery = () => {
@@ -2031,8 +2233,13 @@
                     // 停止播放《好运来》
                     audioManager.stopGoodLuck();
                     
-                    // 生成抽奖结果
-                    generateLotteryResult();
+                    // 判断是否为三等奖或幸运奖（多获奖者）
+                    if (selectedLevel.value === 'third' || selectedLevel.value === 'lucky') {
+                        generateMultiWinnersResult();
+                    } else {
+                        // 生成单抽奖结果
+                        generateLotteryResult();
+                    }
                 };
 
                 const resetLottery = () => {
@@ -2045,6 +2252,21 @@
                     if (spinningInterval.value) {
                         clearInterval(spinningInterval.value);
                         spinningInterval.value = null;
+                    }
+                    
+                    resetMultiWinnersState();
+                };
+
+                // 重置多获奖者显示状态
+                const resetMultiWinnersState = () => {
+                    isShowingMultiWinners.value = false;
+                    isShowingSummary.value = false;
+                    multiWinners.value = [];
+                    currentWinnerIndex.value = 0;
+                    
+                    if (multiWinnersInterval.value) {
+                        clearInterval(multiWinnersInterval.value);
+                        multiWinnersInterval.value = null;
                     }
                 };
 
@@ -2065,17 +2287,17 @@
                         alert('所有参与者都已中奖！');
                         return;
                     }
-                    
+
                     // 随机选择中奖者
                     const randomIndex = Math.floor(Math.random() * availableParticipants.value.length);
                     const winner = availableParticipants.value[randomIndex];
                     const prize = selectedPrizeInfo.value;
-                    
+
                     if (!prize) {
                         alert('奖品信息错误！');
                         return;
                     }
-                    
+
                     // 生成抽奖记录
                     const lotteryRecord = {
                         id: Date.now().toString(),
@@ -2087,20 +2309,101 @@
                         levelName: prize.levelName,
                         timestamp: new Date().toISOString()
                     };
-                    
+
                     // 更新本地存储
                     history.value.push(lotteryRecord);
                     saveData();
-                    
+
                     // 播放中奖音效
                     audioManager.play('win');
-                    
+
                     // 更新当前结果
                     currentResult.value = {
                         ...winner,
                         prizeName: prize.name,
                         levelName: prize.levelName
                     };
+                };
+
+                // 生成多获奖者结果（三等奖、幸运奖）
+                const generateMultiWinnersResult = () => {
+                    const prize = selectedPrizeInfo.value;
+
+                    if (!prize) {
+                        alert('奖品信息错误！');
+                        return;
+                    }
+
+                    // 获取需要抽取的人数
+                    const winnerCount = Math.min(prize.remaining, availableParticipants.value.length);
+
+                    if (winnerCount === 0) {
+                        alert('没有可用的参与者或奖品！');
+                        return;
+                    }
+
+                    // 随机选择多个中奖者
+                    const winners = [];
+                    const tempParticipants = [...availableParticipants.value];
+
+                    for (let i = 0; i < winnerCount; i++) {
+                        if (tempParticipants.length === 0) break;
+                        const randomIndex = Math.floor(Math.random() * tempParticipants.length);
+                        const winner = tempParticipants.splice(randomIndex, 1)[0];
+                        winners.push(winner);
+                    }
+
+                    // 保存中奖者列表
+                    multiWinners.value = winners;
+
+                    // 生成抽奖记录并保存
+                    const timestamp = new Date().toISOString();
+                    winners.forEach((winner, index) => {
+                        const lotteryRecord = {
+                            id: (Date.now() + index).toString(),
+                            participantId: winner.id,
+                            participantName: winner.name,
+                            awardId: prize.id,
+                            prizeName: prize.name,
+                            level: prize.level,
+                            levelName: prize.levelName,
+                            timestamp: timestamp
+                        };
+                        history.value.push(lotteryRecord);
+                    });
+                    saveData();
+
+                    // 开始逐次显示动画
+                    startMultiWinnersAnimation();
+                };
+
+                // 开始多获奖者逐次显示动画
+                const startMultiWinnersAnimation = () => {
+                    isShowingMultiWinners.value = true;
+                    currentWinnerIndex.value = 0;
+
+                    // 播放第一位中奖者音效
+                    audioManager.play('win');
+
+                    // 每1秒显示一位中奖者
+                    multiWinnersInterval.value = setInterval(() => {
+                        currentWinnerIndex.value++;
+
+                        if (currentWinnerIndex.value >= multiWinners.value.length) {
+                            // 所有中奖者显示完毕，显示汇总
+                            clearInterval(multiWinnersInterval.value);
+                            multiWinnersInterval.value = null;
+
+                            // 延迟1秒后显示汇总
+                            setTimeout(() => {
+                                isShowingMultiWinners.value = false;
+                                isShowingSummary.value = true;
+                            }, 1000);
+                        } else {
+                            // 播放下一位中奖者音效
+                            audioManager.play('win');
+                        }
+                    }, 1000);
                 };
 
                 const getLevelClass = (level) => {
@@ -2159,14 +2462,20 @@
                     awards,
                     history,
                     awardLevels,
-                    
+
+                    // 多获奖者显示相关状态
+                    isShowingMultiWinners,
+                    isShowingSummary,
+                    multiWinners,
+                    currentWinnerIndex,
+
                     // 计算属性
                     availableParticipants,
                     canStartLottery,
                     availablePrizes,
                     selectedPrizeInfo,
                     sortedHistory,
-                    
+
                     // 方法
                     selectLevel,
                     selectPrize,
