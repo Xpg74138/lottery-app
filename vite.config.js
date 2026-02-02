@@ -7,14 +7,17 @@ export default defineConfig({
   base: './', // 使用相对路径
   build: {
     outDir: 'dist',
-    assetsDir: './assets',
+    assetsDir: 'assets',
     minify: 'terser',
     cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router']
-        }
+        },
+        format: 'es',
+        interop: 'auto',
+        preserveModules: false
       }
     }
   },
