@@ -5,7 +5,7 @@
 [headers]
   # 允许音频文件的CORS
   [[headers.values]]
-    for = "/*.mp3"
+    for = "/*.m4v"
     [headers.values]
       Access-Control-Allow-Origin = "*"
   
