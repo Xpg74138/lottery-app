@@ -39,15 +39,30 @@
             />
           </div>
         </div>
-        <div class="form-group">
-          <label for="award-color">展示颜色</label>
-          <div class="color-picker">
-            <input 
-              type="color" 
-              id="award-color" 
-              v-model="newAward.color" 
-            />
-            <span class="color-value">{{ newAward.color }}</span>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="award-level">奖项等级</label>
+            <select 
+              id="award-level" 
+              v-model="newAward.level" 
+              required
+            >
+              <option value="first">一等奖</option>
+              <option value="second">二等奖</option>
+              <option value="third">三等奖</option>
+              <option value="lucky">幸运奖</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="award-color">展示颜色</label>
+            <div class="color-picker">
+              <input 
+                type="color" 
+                id="award-color" 
+                v-model="newAward.color" 
+              />
+              <span class="color-value">{{ newAward.color }}</span>
+            </div>
           </div>
         </div>
         <div class="form-actions">
@@ -69,6 +84,7 @@
         >
           <div class="award-info">
             <h4>{{ award.name }}</h4>
+            <p>奖项等级：{{ getLevelLabel(award.level) }}</p>
             <p>获奖人数：{{ award.count }}名</p>
             <p>展示颜色：<span class="color-preview" :style="{ backgroundColor: award.color }"></span> {{ award.color }}</p>
           </div>
@@ -114,15 +130,30 @@
             />
           </div>
         </div>
-        <div class="form-group">
-          <label for="edit-award-color">展示颜色</label>
-          <div class="color-picker">
-            <input 
-              type="color" 
-              id="edit-award-color" 
-              v-model="editingAward.color" 
-            />
-            <span class="color-value">{{ editingAward.color }}</span>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-award-level">奖项等级</label>
+            <select 
+              id="edit-award-level" 
+              v-model="editingAward.level" 
+              required
+            >
+              <option value="first">一等奖</option>
+              <option value="second">二等奖</option>
+              <option value="third">三等奖</option>
+              <option value="lucky">幸运奖</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-award-color">展示颜色</label>
+            <div class="color-picker">
+              <input 
+                type="color" 
+                id="edit-award-color" 
+                v-model="editingAward.color" 
+              />
+              <span class="color-value">{{ editingAward.color }}</span>
+            </div>
           </div>
         </div>
         <div class="form-actions">
@@ -140,8 +171,8 @@ import { ref, onMounted } from 'vue'
 // 响应式数据
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const newAward = ref({ name: '', count: 1, color: '#e94560' })
-const editingAward = ref({ id: '', name: '', count: 1, color: '#e94560' })
+const newAward = ref({ name: '', count: 1, level: 'lucky', color: '#e94560' })
+const editingAward = ref({ id: '', name: '', count: 1, level: 'lucky', color: '#e94560' })
 const awards = ref([])
 
 // 生命周期
@@ -188,6 +219,7 @@ const addAward = () => {
     id: Date.now().toString(),
     name: newAward.value.name.trim(),
     count: newAward.value.count,
+    level: newAward.value.level,
     color: newAward.value.color
   }
 
@@ -248,6 +280,16 @@ const clearAllAwards = () => {
     saveAwards()
     alert('清空成功！')
   }
+}
+
+const getLevelLabel = (level) => {
+  const levelMap = {
+    'first': '一等奖',
+    'second': '二等奖',
+    'third': '三等奖',
+    'lucky': '幸运奖'
+  }
+  return levelMap[level] || level
 }
 </script>
 
@@ -363,7 +405,8 @@ const clearAllAwards = () => {
 }
 
 .form-group input[type="text"],
-.form-group input[type="number"] {
+.form-group input[type="number"],
+.form-group select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 4px;
@@ -371,6 +414,12 @@ const clearAllAwards = () => {
   color: var(--text-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-size: 16px;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.2);
 }
 
 .form-group input:focus {
